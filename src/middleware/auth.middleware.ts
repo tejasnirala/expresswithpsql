@@ -27,12 +27,10 @@ interface RequestUser {
 }
 
 /**
- * Augment Express Request with user
+ * Extended request with user
  */
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: RequestUser;
-  }
+interface AuthenticatedRequest extends Request {
+  user?: RequestUser;
 }
 
 /**
@@ -81,7 +79,7 @@ export const authenticate = async (
     }
 
     // Attach user to request
-    req.user = {
+    (req as AuthenticatedRequest).user = {
       id: user.id,
       email: user.email,
       role: user.role,
@@ -110,12 +108,14 @@ export const authenticate = async (
  */
 export const authorize = (allowedRoles: Role[]) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.user) {
+    const authReq = req as AuthenticatedRequest;
+
+    if (!authReq.user) {
       next(new AuthenticationError('User not authenticated'));
       return;
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(authReq.user.role)) {
       next(new AuthorizationError('Insufficient permissions'));
       return;
     }
@@ -123,3 +123,6 @@ export const authorize = (allowedRoles: Role[]) => {
     next();
   };
 };
+
+// Export the type for use in other files
+export type { AuthenticatedRequest, RequestUser };

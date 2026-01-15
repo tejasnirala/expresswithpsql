@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# =============================================================================
+# Pre-push Hook - Prevent direct pushes to protected branches
+# =============================================================================
+
+# Protected branches that cannot be pushed to directly
+PROTECTED_BRANCHES="^(main|master|stage|staging|dev|develop)$"
+
+# Get the current branch name
+CURRENT_BRANCH=$(git symbolic-ref HEAD 2>/dev/null | sed -e 's,.*/\(.*\),\1,')
+
+# Check if current branch matches protected branches
+if echo "$CURRENT_BRANCH" | grep -qE "$PROTECTED_BRANCHES"; then
+  echo ""
+  echo "🚫 PUSH REJECTED!"
+  echo ""
+  echo "   Direct pushes to '$CURRENT_BRANCH' branch are not allowed."
+  echo ""
+  echo "   Please follow the Git workflow:"
+  echo "   1. Create a feature branch: git checkout -b feature/your-feature-name"
+  echo "   2. Make your changes and commit"
+  echo "   3. Push your feature branch: git push origin feature/your-feature-name"
+  echo "   4. Create a Pull Request on GitHub"
+  echo ""
+  echo "   Branch naming conventions:"
+  echo "   • feature/description  - New features"
+  echo "   • fix/description      - Bug fixes"
+  echo "   • hotfix/description   - Critical production fixes"
+  echo "   • docs/description     - Documentation updates"
+  echo "   • refactor/description - Code refactoring"
+  echo "   • test/description     - Test additions/updates"
+  echo ""
+  exit 1
+fi
+
+echo "✅ Pre-push checks passed for branch: $CURRENT_BRANCH"
+exit 0

@@ -1,1 +1,16 @@
+#!/bin/sh
+
+# =============================================================================
+# Pre-commit Hook - Code Quality Checks
+# =============================================================================
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged (linting and formatting)
 pnpm exec lint-staged
+
+# Run typecheck
+echo "📝 Running TypeScript type check..."
+pnpm run typecheck
+
+echo "✅ All pre-commit checks passed!"

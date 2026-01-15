@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service.js';
 import { sendSuccess, sendCreated, sendNoContent } from '../utils/response.js';
+import type { AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import type {
   RegisterInput,
   LoginInput,
@@ -72,13 +73,15 @@ export const logout = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const authReq = req as AuthenticatedRequest;
+
     // req.user is set by authenticate middleware
-    if (!req.user) {
+    if (!authReq.user) {
       sendNoContent(res);
       return;
     }
 
-    await authService.logout(req.user.id, req.body.refreshToken);
+    await authService.logout(authReq.user.id, req.body.refreshToken);
 
     sendNoContent(res);
   } catch (error) {
@@ -92,11 +95,13 @@ export const logout = async (
  */
 export const me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    if (!req.user) {
+    const authReq = req as AuthenticatedRequest;
+
+    if (!authReq.user) {
       throw new Error('User not found in request');
     }
 
-    const user = await authService.getCurrentUser(req.user.id);
+    const user = await authService.getCurrentUser(authReq.user.id);
 
     sendSuccess(res, user, 'User retrieved successfully');
   } catch (error) {
